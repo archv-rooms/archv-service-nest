@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String
+  username      String?  @unique
+  email         String         @unique
+  password      String
+  createdAt     DateTime       @default(now())
+  role          String         @default("user")
+  avatar        String?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  emailVerified      Boolean   @default(false)
+  emailVerifyToken   String?
+  loginAttempts      Int       @default(0)
+  lockedUntil        DateTime?
+  sessionToken  String?
+  onboardingDone Boolean 
+  payments  Payment[]
+  subscriptions Subscription[]
+  favorites Favorite[]
+  sessions  GameSession[]
+  sentFriendships     Friendship[] @relation("SentFriendships")
+  receivedFriendships Friendship[] @relation("ReceivedFriendships")
+  notifications Notification[]
+  conversationsParticipating ConversationParticipant[]
+  messagesSent                Message[]
+}
+
+model Plan {
+  id            Int            @id @default(autoincrement())
+  name          String
+  price         Float
+  description   String
+  accessLevel   Int
+  games         Game[]
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  planId    Int
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  plan      Plan     @relation(fields: [planId], references: [id])
+  payments  Payment[]
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([planId], map: "Subscription_planId_fkey")
+  @@index([userId], map: "Subscription_userId_fkey")
+}
+
+model Game {
+  id          Int            @id @default(autoincrement())
+  title       String
+  console     String
+  image       String
+  fileUrl     String?
+  fileName    String?
+  accessLevel Int
+  planId      Int?
+  plan        Plan?          @relation(fields: [planId], references: [id])
+  categories  GameCategory[]
+  favorites Favorite[]
+  sessions  GameSession[]
+
+  @@index([planId], map: "Game_planId_fkey")
+}
+
+model Category {
+  id    Int            @id @default(autoincrement())
+  name  String
+  games GameCategory[]
+}
+
+model GameCategory {
+  gameId     Int
+  categoryId Int
+  game       Game     @relation(fields: [gameId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([gameId, categoryId])
+}
+
+model GameSave {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  gameId    Int
+  slot      Int      @default(1)
+  saveData  Json
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, gameId, slot])
+  @@index([userId])
+  @@index([gameId])
+}
+
+model Payment {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  subscriptionId Int?
+  mpPaymentId    String       @unique
+  amount         Float
+  status         String
+  method         String?
+  description    String?
+  createdAt      DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id])
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  gameId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  game      Game     @relation(fields: [gameId], references: [id])
+
+  @@unique([userId, gameId])
+  @@index([userId])
+  @@index([gameId])
+}
+
+model GameSession {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  gameId    Int
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  duration  Int?
+  user      User     @relation(fields: [userId], references: [id])
+  game      Game     @relation(fields: [gameId], references: [id])
+
+  @@index([userId])
+  @@index([gameId])
+}
+
+model GlobalConfig {
+  id        Int      @id @default(1)
+  themeKey  String   @default("default")
+  updatedAt DateTime @updatedAt
+}
+
+model Friendship {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("SentFriendships", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedFriendships", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  type      String   @default("direct")
+  name      String?
+  createdAt DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             Int      @id @default(autoincrement())
+  conversationId Int
+  userId         Int
+  joinedAt       DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+}
