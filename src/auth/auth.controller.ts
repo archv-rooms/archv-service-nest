@@ -11,10 +11,10 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    const user = await this.authService.register(dto);
+    const data = await this.authService.register(dto);
     return {
       success: true,
-      data: { user },
+      data,
       message: 'Conta criada com sucesso.',
     };
   }
