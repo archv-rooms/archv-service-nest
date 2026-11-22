@@ -9,17 +9,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
-  // Equivalente ao corsMiddleware (origin: true, credentials: true) do
-  // Express — libera todas as origens, mantendo o suporte a cookies/headers
-  // de autenticação.
   app.enableCors({ origin: true, credentials: true });
 
-  // ValidationPipe global: é o que faz os decorators dos DTOs (@IsEmail,
-  // @IsNotEmpty, etc.) realmente serem checados em toda rota da aplicação,
-  // sem precisar chamar nada manualmente em cada controller.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, stopAtFirstError: true }));
 
-  // Filtro que padroniza toda resposta de erro em { success, data, message }.
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const port = config.get<number>('PORT') || 3000;

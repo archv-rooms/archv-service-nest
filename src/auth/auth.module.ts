@@ -15,8 +15,7 @@ import { AdminGuard } from './guards/admin.guard';
   imports: [
     EmailModule,
     PassportModule,
-    // registerAsync porque o segredo do JWT vem do .env, e o ConfigService
-    // só fica pronto depois que o ConfigModule termina de carregar.
+
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,9 +27,7 @@ import { AdminGuard } from './guards/admin.guard';
   ],
   controllers: [AuthController, GoogleAuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, OptionalJwtAuthGuard, AdminGuard],
-  // Exportamos esses quatro porque outros módulos (games, library, saves, etc.)
-  // vão precisar dos guards para proteger suas próprias rotas, e do
-  // AuthService caso precisem, por exemplo, assinar um token.
+
   exports: [AuthService, JwtAuthGuard, OptionalJwtAuthGuard, AdminGuard],
 })
 export class AuthModule {}

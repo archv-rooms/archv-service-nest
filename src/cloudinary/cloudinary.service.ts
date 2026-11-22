@@ -13,10 +13,6 @@ export class CloudinaryService {
     });
   }
 
-  // Equivalente ao "new Promise + streamifier" que existia dentro do
-  // updateAvatarFile no userController.js. O buffer do arquivo (que o
-  // multer já deixou em memória) vira uma stream de leitura e é enviado
-  // pro Cloudinary por essa stream, sem precisar salvar em disco.
   uploadFromBuffer(
     buffer: Buffer,
     folder: string,

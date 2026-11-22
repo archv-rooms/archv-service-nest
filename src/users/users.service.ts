@@ -128,8 +128,6 @@ export class UsersService {
   }
 
   async getPublicProfile(targetId: number, requesterId: number) {
-    // Só permite ver perfil de quem é amigo (status accepted, em qualquer direção),
-    // a não ser que a pessoa esteja vendo o próprio perfil.
     const friendship = await this.prisma.friendship.findFirst({
       where: {
         status: 'accepted',
@@ -166,8 +164,6 @@ export class UsersService {
       0,
     );
 
-    // Agrupa as sessões por jogo pra descobrir em quais jogos o usuário
-    // mais jogou (topGames), igual ao reduce manual que existia no Express.
     const gameMap: Record<number, { game: (typeof sessions)[number]['game']; totalSeconds: number; sessionCount: number }> = {};
     for (const s of sessions) {
       if (!s.game) continue;

@@ -8,8 +8,6 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 
-// Prefixo /api/auth — mesmo caminho que o server.js registrava com
-// app.use('/api/auth', authRoutes).
 @Controller('api/auth')
 export class AuthController {
   constructor(
@@ -71,9 +69,6 @@ export class AuthController {
   }
 }
 
-// Rotas do Google OAuth ficam num controller à parte porque no projeto
-// Express elas moravam fora do prefixo /api (app.use('/auth', googleAuthRoutes),
-// sem o "/api" na frente). Mantemos esse mesmo caminho aqui.
 @Controller('auth')
 export class GoogleAuthController {
   constructor(
@@ -84,8 +79,6 @@ export class GoogleAuthController {
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   googleLogin() {
-    // O guard já redireciona para a tela de login do Google.
-    // Esse método nunca chega a executar.
   }
 
   @Get('google/callback')

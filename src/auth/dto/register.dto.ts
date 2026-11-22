@@ -1,9 +1,5 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
-// Cada decorator abaixo substitui uma verificação manual que existia no
-// controller do Express (o "if (!name || !email || !password || !username)").
-// Se algum campo não passar na validação, o Nest já responde 400 antes
-// mesmo do controller ser chamado.
 export class RegisterDto {
   @IsNotEmpty({ message: 'Nome é obrigatório.' })
   name: string;
