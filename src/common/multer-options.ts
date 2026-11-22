@@ -2,17 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import { memoryStorage } from 'multer';
 
 const ALLOWED_MIME_TYPES = [
-  // imagens
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
 
-  // vídeos
   'video/mp4',
   'video/webm',
 
-  // arquivos de rom/room
   'application/zip',
   'application/x-zip-compressed',
   'application/x-rar-compressed',
@@ -23,9 +20,6 @@ const ALLOWED_MIME_TYPES = [
 
 const MAX_SIZE_MB = 100;
 
-// Mesmas regras do multer.js original: guarda o arquivo em memória (não em
-// disco) e limita tipo/tamanho antes de deixar o arquivo passar pro
-// controller. Importado por qualquer módulo que usar FileInterceptor.
 export const multerOptions = {
   storage: memoryStorage(),
   limits: {

@@ -7,8 +7,6 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 export class EmailService {
   constructor(private readonly config: ConfigService) {}
 
-  // Método privado que efetivamente chama a API da Brevo. Os métodos
-  // públicos abaixo só montam o assunto e o corpo do e-mail e chamam este.
   private async sendEmail(to: string, subject: string, htmlContent: string) {
     const response = await fetch(BREVO_API_URL, {
       method: 'POST',

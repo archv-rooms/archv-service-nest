@@ -7,11 +7,6 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-// No Express, cada função de controller tinha seu próprio try/catch que
-// montava manualmente { success: false, data: {}, message: '...' }. Esse
-// filtro faz a mesma coisa uma única vez, para toda a aplicação: qualquer
-// exceção lançada em qualquer service (throw new NotFoundException(...),
-// por exemplo) passa por aqui antes de virar resposta HTTP.
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -27,9 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (isHttpException) {
       const body = exception.getResponse();
-      // O class-validator (usado nos DTOs) faz o Nest lançar uma exceção
-      // cujo "message" é um array de erros. Nos outros casos é uma string
-      // única, igual ao que o authController.js já retornava.
+
       if (typeof body === 'string') {
         message = body;
       } else if (typeof body === 'object' && body !== null && 'message' in body) {
@@ -37,8 +30,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = Array.isArray(bodyMessage) ? bodyMessage[0] : bodyMessage;
       }
     } else {
-      // Erro não previsto (bug, falha de conexão com o banco, etc.) — loga
-      // no servidor mas não expõe detalhes internos para quem chamou a API.
       console.log('ERRO NÃO TRATADO:', exception);
     }
 

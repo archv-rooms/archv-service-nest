@@ -114,9 +114,6 @@ export class AuthService {
       );
     }
 
-    // Login bem-sucedido: zera as tentativas e gera um novo sessionToken.
-    // Esse sessionToken é o que permite invalidar sessões antigas (por
-    // exemplo, ao trocar a senha) sem precisar de uma blacklist de JWTs.
     const sessionToken = crypto.randomBytes(32).toString('hex');
 
     await this.prisma.user.update({
@@ -171,7 +168,7 @@ export class AuthService {
         password: hashedPassword,
         resetToken: null,
         resetTokenExpiry: null,
-        sessionToken: null, // força logout em todos os dispositivos
+        sessionToken: null,
       },
     });
   }
@@ -198,9 +195,6 @@ export class AuthService {
     });
   }
 
-  // Usado pela GoogleStrategy: recebe o perfil devolvido pelo Google e
-  // encontra ou cria o usuário correspondente, igual ao callback que
-  // existia em passport.js no projeto Express.
   async findOrCreateFromGoogle(profile: { email: string; name: string; avatar?: string }) {
     const sessionToken = crypto.randomBytes(32).toString('hex');
 

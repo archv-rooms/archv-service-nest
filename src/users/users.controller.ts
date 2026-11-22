@@ -20,8 +20,6 @@ import { UpdateNameDto } from './dto/update-name.dto';
 import { SetUsernameDto } from './dto/set-username.dto';
 import { UpdateAvatarUrlDto } from './dto/update-avatar-url.dto';
 
-// @UseGuards no controller inteiro equivale a repetir authMiddleware em
-// cada rota do userRoutes.js original — todas as rotas daqui exigem login.
 @Controller('api/user')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
@@ -84,10 +82,6 @@ export class UsersController {
     return { success: true, data: { games }, message: 'Favoritos carregados.' };
   }
 
-  // Fica por último porque é uma rota "coringa" (:id) — se viesse antes de
-  // /favorites, por exemplo, o Nest tentaria casar "favorites" como se
-  // fosse um :id. A ordem das rotas no controller importa, igual importava
-  // no Express.
   @Get(':id/public-profile')
   async getPublicProfile(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
     const data = await this.usersService.getPublicProfile(id, req.user.id);

@@ -10,11 +10,6 @@ interface JwtPayload {
   sessionToken: string;
 }
 
-// O Passport já cuida de: extrair o "Bearer <token>" do header Authorization,
-// verificar a assinatura e a expiração do JWT. Se algo disso falhar, ele
-// rejeita a requisição antes mesmo de chegar no método validate() abaixo.
-// O que sobra pra gente fazer aqui é exatamente o que o authMiddleware.js
-// fazia depois do jwt.verify: buscar o usuário e checar sessionToken/banimento.
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -46,8 +41,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('SESSION_CONFLICT');
     }
 
-    // O que a gente retorna aqui vira "req.user" no controller — equivalente
-    // ao req.userId / req.userRole / req.user que o authMiddleware.js setava.
     return { id: user.id, role: user.role };
   }
 }
