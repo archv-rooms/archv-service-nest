@@ -2,6 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { GamesModule } from './games/games.module';
+import { PlatformsModule } from './platforms/platforms.module';
+import { LibraryModule } from './library/library.module';
 
 @Module({
   imports: [
@@ -11,8 +15,11 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
-    // Próximos módulos a entrar aqui: Users, Games, Platforms, Library,
-    // Plans/Checkout, Saves, Sessions, Friends, Leaderboard, Notifications,
+    UsersModule,
+    GamesModule,
+    PlatformsModule,
+    LibraryModule,
+    // Próximos módulos a entrar aqui: Plans/Checkout, Saves, Sessions, Friends, Leaderboard, Notifications,
     // Chat, Admin, Webhook, Upload, Donation.
   ],
 })
