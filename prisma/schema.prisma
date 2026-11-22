@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -23,6 +23,7 @@ model User {
   loginAttempts      Int       @default(0)
   lockedUntil        DateTime?
   sessionToken  String?
+  pushToken     String?
   onboardingDone Boolean 
   payments  Payment[]
   subscriptions Subscription[]
@@ -33,6 +34,8 @@ model User {
   notifications Notification[]
   conversationsParticipating ConversationParticipant[]
   messagesSent                Message[]
+  roomsHosted     Room[]       @relation("RoomHost")
+  roomMemberships RoomMember[]
 }
 
 model Plan {
@@ -55,8 +58,8 @@ model Subscription {
   payments  Payment[]
   user      User     @relation(fields: [userId], references: [id])
 
-  @@index([planId], map: "Subscription_planId_fkey")
-  @@index([userId], map: "Subscription_userId_fkey")
+  @@index([planId])
+  @@index([userId])
 }
 
 model Game {
@@ -72,8 +75,9 @@ model Game {
   categories  GameCategory[]
   favorites Favorite[]
   sessions  GameSession[]
+  rooms     Room[]
 
-  @@index([planId], map: "Game_planId_fkey")
+  @@index([planId])
 }
 
 model Category {
@@ -218,4 +222,34 @@ model Message {
 
   @@index([conversationId])
   @@index([senderId])
+}
+
+model Room {
+  id         Int      @id @default(autoincrement())
+  gameId     Int
+  hostId     Int
+  maxPlayers Int      @default(2)
+  status     String   @default("open")
+  createdAt  DateTime @default(now())
+
+  game    Game         @relation(fields: [gameId], references: [id])
+  host    User         @relation("RoomHost", fields: [hostId], references: [id])
+  members RoomMember[]
+
+  @@index([gameId])
+  @@index([hostId])
+}
+
+model RoomMember {
+  id       Int      @id @default(autoincrement())
+  roomId   Int
+  userId   Int
+  joinedAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
 }
