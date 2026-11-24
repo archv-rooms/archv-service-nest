@@ -8,16 +8,13 @@ import {
   Patch,
   Post,
   Put,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { SubscriptionGuard } from '../auth/guards/subscription.guard';
 import { multerOptions } from '../common/multer-options';
 import { GamesService } from './games.service';
 import { CreateGameDto } from './dto/create-game.dto';
@@ -28,16 +25,16 @@ export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
   @Get()
-  @UseGuards(OptionalJwtAuthGuard, SubscriptionGuard)
-  async findAll(@Req() req: any) {
-    const games = await this.gamesService.findAll(req.accessLevel ?? 0, req.user?.role);
+  @UseGuards(OptionalJwtAuthGuard)
+  async findAll() {
+    const games = await this.gamesService.findAll();
     return { success: true, data: games, message: 'Jogos carregados.' };
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, SubscriptionGuard)
-  async findOne(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
-    const game = await this.gamesService.findOne(id, req.accessLevel ?? 0, req.user.role);
+  @UseGuards(OptionalJwtAuthGuard)
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const game = await this.gamesService.findOne(id);
     return { success: true, data: game, message: 'Jogo carregado.' };
   }
 

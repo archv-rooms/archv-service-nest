@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Delete,
   Patch,
   Post,
   Body,
@@ -19,6 +20,7 @@ import { UsersService } from './users.service';
 import { UpdateNameDto } from './dto/update-name.dto';
 import { SetUsernameDto } from './dto/set-username.dto';
 import { UpdateAvatarUrlDto } from './dto/update-avatar-url.dto';
+import { SavePushTokenDto } from './dto/save-push-token.dto';
 
 @Controller('api/user')
 @UseGuards(JwtAuthGuard)
@@ -54,6 +56,18 @@ export class UsersController {
   async updateAvatarFile(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
     const data = await this.usersService.updateAvatarFile(req.user.id, file);
     return { success: true, data, message: 'Avatar atualizado com sucesso.' };
+  }
+
+  @Delete('avatar')
+  async removeAvatar(@Req() req: any) {
+    const data = await this.usersService.removeAvatar(req.user.id);
+    return { success: true, data, message: 'Avatar removido com sucesso.' };
+  }
+
+  @Patch('push-token')
+  async savePushToken(@Req() req: any, @Body() dto: SavePushTokenDto) {
+    await this.usersService.savePushToken(req.user.id, dto.pushToken);
+    return { success: true, data: {}, message: 'Token de push salvo.' };
   }
 
   @Patch('onboarding')
