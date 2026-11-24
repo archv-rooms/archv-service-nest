@@ -14,9 +14,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     const isHttpException = exception instanceof HttpException;
+    const parserStatus = this.getParserStatus(exception);
     const status = isHttpException
       ? exception.getStatus()
-      : HttpStatus.INTERNAL_SERVER_ERROR;
+      : parserStatus ?? HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message = 'Erro interno do servidor.';
 
@@ -29,6 +30,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const bodyMessage = (body as { message: string | string[] }).message;
         message = Array.isArray(bodyMessage) ? bodyMessage[0] : bodyMessage;
       }
+    } else if (parserStatus === HttpStatus.PAYLOAD_TOO_LARGE) {
+      message = 'Corpo da requisição muito grande.';
+    } else if (parserStatus === HttpStatus.BAD_REQUEST) {
+      message = 'Corpo da requisição inválido.';
     } else {
       console.log('ERRO NÃO TRATADO:', exception);
     }
@@ -38,5 +43,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
       data: {},
       message,
     });
+  }
+
+  private getParserStatus(exception: unknown): number | null {
+    const error = exception as { status?: number; type?: string };
+    if (error?.type === 'entity.too.large') return HttpStatus.PAYLOAD_TOO_LARGE;
+    if (error?.type === 'entity.parse.failed') return HttpStatus.BAD_REQUEST;
+    return null;
   }
 }

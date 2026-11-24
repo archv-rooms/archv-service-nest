@@ -87,6 +87,27 @@ export class UsersService {
     return { avatar: user.avatar };
   }
 
+  async removeAvatar(userId: number) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatar: null },
+    });
+
+    return { avatar: null };
+  }
+
+  async savePushToken(userId: number, pushToken: string) {
+    await this.prisma.user.updateMany({
+      where: { pushToken, NOT: { id: userId } },
+      data: { pushToken: null },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { pushToken },
+    });
+  }
+
   async completeOnboarding(userId: number) {
     await this.prisma.user.update({
       where: { id: userId },

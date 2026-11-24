@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -17,30 +16,15 @@ export class GamesService {
     private readonly cloudinary: CloudinaryService,
   ) {}
 
-  async findAll(accessLevel: number, role?: string) {
-    const games = await this.prisma.game.findMany();
-
-    if (role === 'admin') {
-      return games;
-    }
-
-    return games.map((game: { accessLevel: number }) => {
-      if (game.accessLevel > accessLevel) {
-        return { ...game, fileUrl: null, fileName: null };
-      }
-      return game;
-    });
+  findAll() {
+    return this.prisma.game.findMany();
   }
 
-  async findOne(id: number, accessLevel: number, role?: string) {
+  async findOne(id: number) {
     const game = await this.prisma.game.findUnique({ where: { id } });
 
     if (!game) {
       throw new NotFoundException('Jogo não encontrado.');
-    }
-
-    if (role !== 'admin' && game.accessLevel > accessLevel) {
-      throw new ForbiddenException('Seu plano não permite acesso a este jogo.');
     }
 
     return game;

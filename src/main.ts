@@ -1,21 +1,15 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { configureApp } from './app.setup';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const config = app.get(ConfigService);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  configureApp(app);
 
-  app.enableCors({ origin: true, credentials: true });
-
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, stopAtFirstError: true }));
-
-  app.useGlobalFilters(new HttpExceptionFilter());
-
-  const port = config.get<number>('PORT') || 3000;
+  const port = app.get(ConfigService).get<number>('PORT') || 3000;
   await app.listen(port);
   console.log(`Seja bem-vindo ao Archv.rooms, aproveite a estadia! | Servidor rodando na porta ${port}`);
 }
