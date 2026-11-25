@@ -8,6 +8,11 @@ import { GamesModule } from './games/games.module';
 import { PlatformsModule } from './platforms/platforms.module';
 import { LibraryModule } from './library/library.module';
 import { RoomsModule } from './rooms/rooms.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { SessionsModule } from './sessions/sessions.module';
+import { SavesModule } from './saves/saves.module';
+import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -19,6 +24,11 @@ import { RoomsModule } from './rooms/rooms.module';
     PlatformsModule,
     LibraryModule,
     RoomsModule,
+    NotificationsModule,
+    SessionsModule,
+    SavesModule,
+    LeaderboardModule,
+    FriendsModule,
   ],
   controllers: [AppController],
 })
