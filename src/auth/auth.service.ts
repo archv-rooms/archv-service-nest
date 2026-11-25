@@ -3,7 +3,6 @@ import {
   BadRequestException,
   NotFoundException,
   UnauthorizedException,
-  ForbiddenException,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
@@ -41,11 +40,10 @@ export class AuthService {
       where: { username: dto.username },
     });
     if (usernameInUse) {
-      throw new BadRequestException('Username já em uso.');
+      throw new BadRequestException('Nick já em uso.');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
 
     const user = await this.prisma.user.create({
       data: {
@@ -53,29 +51,31 @@ export class AuthService {
         username: dto.username,
         email: dto.email,
         password: hashedPassword,
-        emailVerified: false,
-        emailVerifyToken,
+        emailVerified: true,
+        emailVerifyToken: null,
         onboardingDone: false,
       },
     });
 
-    const verifyLink = `${this.config.get('FRONTEND_URL')}/verify-email?token=${emailVerifyToken}`;
-    await this.emailService.sendVerificationEmail(dto.email, verifyLink);
-    await this.emailService.sendWelcomeEmail(dto.email, dto.name);
+    try {
+      await this.emailService.sendWelcomeEmail(dto.email, dto.name);
+    } catch (error) {
+      console.log('ERRO WELCOME EMAIL:', error);
+    }
 
     return this.stripPassword(user);
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado.');
+    if ((!dto.username && !dto.email) || !dto.password) {
+      throw new BadRequestException('Nick e senha são obrigatórios.');
     }
 
-    if (!user.emailVerified) {
-      throw new ForbiddenException('E-mail não verificado. Verifique sua caixa de entrada.');
+    const user = dto.username
+      ? await this.prisma.user.findUnique({ where: { username: dto.username } })
+      : await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
     }
 
     if (user.lockedUntil && user.lockedUntil > new Date()) {
@@ -93,7 +93,7 @@ export class AuthService {
       const bloqueado = novasTentativas >= MAX_LOGIN_ATTEMPTS;
 
       await this.prisma.user.update({
-        where: { email: dto.email },
+        where: { id: user.id },
         data: {
           loginAttempts: novasTentativas,
           lockedUntil: bloqueado
@@ -117,7 +117,7 @@ export class AuthService {
     const sessionToken = crypto.randomBytes(32).toString('hex');
 
     await this.prisma.user.update({
-      where: { email: dto.email },
+      where: { id: user.id },
       data: {
         loginAttempts: 0,
         lockedUntil: null,
@@ -195,7 +195,7 @@ export class AuthService {
     });
   }
 
-  async findOrCreateFromGoogle(profile: { email: string; name: string; avatar?: string }) {
+  async findOrCreateFromProvider(profile: { email: string; name: string; avatar?: string }) {
     const sessionToken = crypto.randomBytes(32).toString('hex');
 
     let user = await this.prisma.user.findUnique({
