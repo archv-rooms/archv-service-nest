@@ -1,10 +1,10 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class RegisterDto {
-  @IsNotEmpty({ message: 'Nome é obrigatório.' })
+  @IsNotEmpty({ message: 'Nome, nick, e-mail e senha são obrigatórios.' })
   name: string;
 
-  @IsNotEmpty({ message: 'Username é obrigatório.' })
+  @IsNotEmpty({ message: 'Nome, nick, e-mail e senha são obrigatórios.' })
   username: string;
 
   @IsEmail({}, { message: 'E-mail inválido.' })

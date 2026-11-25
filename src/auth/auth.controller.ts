@@ -1,19 +1,13 @@
-import { Controller, Post, Get, Body, Query, Req, Res, UseGuards, HttpCode } from '@nestjs/common';
-import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
+import { Controller, Post, Get, Body, Query, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -21,7 +15,7 @@ export class AuthController {
     return {
       success: true,
       data: { user },
-      message: 'Usuário registrado. Verifique seu e-mail para ativar a conta.',
+      message: 'Conta criada com sucesso.',
     };
   }
 
@@ -66,31 +60,5 @@ export class AuthController {
       data: {},
       message: 'E-mail verificado com sucesso.',
     };
-  }
-}
-
-@Controller('auth')
-export class GoogleAuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly config: ConfigService,
-  ) {}
-
-  @Get('google')
-  @UseGuards(GoogleAuthGuard)
-  googleLogin() {
-  }
-
-  @Get('google/callback')
-  @UseGuards(GoogleAuthGuard)
-  googleCallback(@Req() req: any, @Res() res: Response) {
-    const user = req.user;
-    const token = this.authService.signToken(user.id, user.role, user.sessionToken);
-    const needsUsername = !user.username;
-    const frontendUrl = this.config.get('FRONTEND_URL');
-
-    res.redirect(
-      `${frontendUrl}/auth/google/callback?token=${token}&name=${encodeURIComponent(user.name)}&role=${user.role}&needsUsername=${needsUsername}`,
-    );
   }
 }
