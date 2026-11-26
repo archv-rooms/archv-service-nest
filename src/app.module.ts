@@ -13,6 +13,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { SavesModule } from './saves/saves.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { FriendsModule } from './friends/friends.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FriendsModule } from './friends/friends.module';
     SavesModule,
     LeaderboardModule,
     FriendsModule,
+    ChatModule,
   ],
   controllers: [AppController],
 })

@@ -1,4 +1,4 @@
-const ALLOWED_APP_PREFIXES = ['archvroomsmobile://'];
+const ALLOWED_APP_PREFIXES = ['archvroomsmobile://', 'exp+archv-rooms-mobile://'];
 
 export function isAllowedAppUrl(url: unknown): url is string {
   return typeof url === 'string' && ALLOWED_APP_PREFIXES.some((prefix) => url.startsWith(prefix));

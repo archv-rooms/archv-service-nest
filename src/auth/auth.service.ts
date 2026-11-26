@@ -44,6 +44,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const sessionToken = crypto.randomBytes(32).toString('hex');
 
     const user = await this.prisma.user.create({
       data: {
@@ -54,8 +55,11 @@ export class AuthService {
         emailVerified: true,
         emailVerifyToken: null,
         onboardingDone: false,
+        sessionToken,
       },
     });
+
+    const token = this.signToken(user.id, user.role, sessionToken);
 
     try {
       await this.emailService.sendWelcomeEmail(dto.email, dto.name);
@@ -63,7 +67,7 @@ export class AuthService {
       console.log('ERRO WELCOME EMAIL:', error);
     }
 
-    return this.stripPassword(user);
+    return { user: this.stripPassword(user), token };
   }
 
   async login(dto: LoginDto) {
@@ -72,7 +76,9 @@ export class AuthService {
     }
 
     const user = dto.username
-      ? await this.prisma.user.findUnique({ where: { username: dto.username } })
+      ? await this.prisma.user.findFirst({
+          where: { username: { equals: dto.username.trim(), mode: 'insensitive' } },
+        })
       : await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) {
       throw new NotFoundException('Usuário não encontrado.');
